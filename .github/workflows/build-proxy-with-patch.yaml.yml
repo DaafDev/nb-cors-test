@@ -73,7 +73,7 @@ jobs:
           context: ./netbird
           file: ./netbird/proxy/Dockerfile.multistage
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/nb-cors-test:latest
+          tags: ghcr.io/daafdev/nb-cors-test:latest
 
       - name: Save published NetBird SHA
         if: steps.upstream.outputs.changed == 'true'
