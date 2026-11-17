@@ -1,0 +1,46 @@
+Subject: [PATCH] Permissive CORS
+---
+<+>UTF-8
+===================================================================
+diff --git a/proxy/responseheader.go b/proxy/responseheader.go
+new file mode 100644
+--- /dev/null	(date 1794926850628)
++++ b/proxy/responseheader.go	(date 1794926850628)
+@@ -0,0 +1,22 @@
++package proxy
++
++import "net/http"
++
++const (
++	accessControlAllowOrigin  = "*"
++	accessControlAllowMethods = "*"
++	accessControlAllowHeaders = "*"
++)
++
++func withCORSHeaders(next http.Handler) http.Handler {
++	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		w.Header().Set("Access-Control-Allow-Origin", accessControlAllowOrigin)
++		w.Header().Set("Access-Control-Allow-Methods", accessControlAllowMethods)
++		w.Header().Set("Access-Control-Allow-Headers", accessControlAllowHeaders)
++		if r.Method == http.MethodOptions {
++			w.WriteHeader(http.StatusNoContent)
++			return
++		}
++		next.ServeHTTP(w, r)
++	})
++}
+<+>UTF-8
+===================================================================
+diff --git a/proxy/server.go b/proxy/server.go
+--- a/proxy/server.go	(revision 332fb1cfc7b1d185fb26bef894ee8ebe0fb453a4)
++++ b/proxy/server.go	(date 1794926851060)
+@@ -637,7 +637,8 @@
+ 	handler = web.AssetHandler(handler)
+ 	handler = s.accessLog.Middleware(handler)
+ 	handler = s.meter.Middleware(handler)
+-	return s.hijackTracker.Middleware(handler)
++	handler = s.hijackTracker.Middleware(handler)
++	return withCORSHeaders(handler)
+ }
+
+ // bindMainListener binds the main TCP listener and wraps it with PROXY
